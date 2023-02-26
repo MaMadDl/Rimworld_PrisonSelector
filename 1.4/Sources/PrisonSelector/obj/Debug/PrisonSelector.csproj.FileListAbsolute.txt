@@ -1,0 +1,7 @@
+D:\SteamLibrary\steamapps\common\RimWorld\Mods\N.PrisonSelector\1.4\Assemblies\PrisonSelector.dll
+D:\SteamLibrary\steamapps\common\RimWorld\Mods\N.PrisonSelector\1.4\Assemblies\PrisonSelector.pdb
+D:\SteamLibrary\steamapps\common\RimWorld\Mods\N.PrisonSelector\1.4\Sources\PrisonSelector\obj\Debug\PrisonSelector.csproj.AssemblyReference.cache
+D:\SteamLibrary\steamapps\common\RimWorld\Mods\N.PrisonSelector\1.4\Sources\PrisonSelector\obj\Debug\PrisonSelector.csproj.CoreCompileInputs.cache
+D:\SteamLibrary\steamapps\common\RimWorld\Mods\N.PrisonSelector\1.4\Sources\PrisonSelector\obj\Debug\PrisonSelector.dll
+D:\SteamLibrary\steamapps\common\RimWorld\Mods\N.PrisonSelector\1.4\Sources\PrisonSelector\obj\Debug\PrisonSelector.pdb
+D:\SteamLibrary\steamapps\common\RimWorld\Mods\N.PrisonSelector\1.4\Sources\PrisonSelector\obj\Debug\PrisonSelector.csproj.CopyComplete

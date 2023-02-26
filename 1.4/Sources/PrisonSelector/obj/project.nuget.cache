@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "IADEng6+fivDz0Y9328LreIvpnjAjdcyXiV+uFhmB8X1GkTXaIgbQ+6cL81CpS5MsCzuHPWoGpTvb105QnVO0w==",
+  "success": true,
+  "projectFilePath": "D:\\SteamLibrary\\steamapps\\common\\RimWorld\\Mods\\N.PrisonSelector\\1.4\\Sources\\PrisonSelector\\PrisonSelector.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Mohammad\\.nuget\\packages\\krafs.rimworld.ref\\1.4.3507-beta\\krafs.rimworld.ref.1.4.3507-beta.nupkg.sha512",
+    "C:\\Users\\Mohammad\\.nuget\\packages\\lib.harmony\\2.2.2\\lib.harmony.2.2.2.nupkg.sha512"
+  ],
+  "logs": []
+}

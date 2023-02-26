@@ -1,0 +1,5 @@
+rwconfigrc.json
+/Sources/N.GuardTowers/GuardTowers/obj/Debug
+*.pdb
+*.user
+*.suo
