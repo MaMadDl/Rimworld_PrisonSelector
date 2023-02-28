@@ -9,7 +9,6 @@ using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-using Verse.Profile;
 using FloatSubMenus;
 
 
@@ -49,16 +48,6 @@ namespace PrisonSelector
                 }
                 if (optsList.Count() != 0)
                 {
-
-                    //var fff = new FloatMenuOption("test", null);
-                    //var ggg = new FloatMenuOption("test", null);
-                    //optsList.Clear();
-                    /*
-                    Created FloatMenu with no options
-                    */
-                    //optsList.Add(fff);
-                    //optsList.Add(ggg);
-                    
                     var tmp =new List<FloatMenuOption>();
                     foreach (var opt in optsList)
                     {
