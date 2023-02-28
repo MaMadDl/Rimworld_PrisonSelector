@@ -8,8 +8,7 @@
 	</supportedVersions>
 	<loadBefore></loadBefore>
 	<incompatibleWith></incompatibleWith>
-	<description>
-		Prison And Hospital Selector so you can take Prisoners and Downed pawns to Specific Prison/Hospital
+	<description>Prison And Hospital Selector so you can take Prisoners and Downed pawns to Specific Prison/Hospital		
 	</description>
 	<url>https://github.com/MaMadDl/Rimworld_PrisonSelector</url>
 	<modDependencies>
