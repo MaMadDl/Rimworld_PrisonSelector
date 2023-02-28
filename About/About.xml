@@ -9,19 +9,26 @@
 	<loadBefore></loadBefore>
 	<incompatibleWith></incompatibleWith>
 	<description>
-		Prison And Hospital Selector to take pawn to specific places
+		Prison And Hospital Selector so you can take Prisoners and Downed pawns to Specific Prison/Hospital
 	</description>
-	
-	<!-- <modDependencies>
+	<url>https://github.com/MaMadDl/Rimworld_PrisonSelector</url>
+	<modDependencies>
 		<li>
-		  <packageId>brrainz.harmony</packageId>
-		  <displayName>Harmony</displayName>
-		  <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
-		  <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+			<packageId>brrainz.harmony</packageId> 
+			<displayName>Harmony</displayName>
+			<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+			<steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
 		</li>
-	  </modDependencies>
-	  <loadAfter>
+		<li>
+			<packageId>kathanon.FloatSubMenu</packageId>
+			<displayName>Float Sub-Menus</displayName>
+			<steamWorkshopUrl>steam://url/CommunityFilePage/2864015430</steamWorkshopUrl>
+		</li>
+	</modDependencies>
+	<loadAfter>
 		<li>brrainz.harmony</li>
-	  </loadAfter> -->
+		<li>brrainz.achtung</li>
+		<li>kathanon.FloatSubMenu</li>
+	</loadAfter> 
 
 </ModMetaData>
