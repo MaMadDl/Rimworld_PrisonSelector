@@ -25,9 +25,8 @@ namespace PrisonSelector
 	}
 	[HarmonyPatch(typeof(FloatMenuMakerMap))]
 	[HarmonyPatch(nameof(FloatMenuMakerMap.AddJobGiverWorkOrders))]
-	static class FloatMenuMakerMap_AddJobGiverWorkOrders_Patch
+	static class PrisonSelector_AddJobGiverWorkOrders_Patch
 	{
- 
         public static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts, bool drafted)
         {
 
@@ -35,27 +34,46 @@ namespace PrisonSelector
                 canTargetPawns = true,
             }))
             {    
-                string menuText = "Take Pawn To";
                 var optsList= new List<FloatMenuOption>();
                 var targetPawn = thing as Pawn;
                 if (targetPawn.Spawned)
                 {   
                     if (targetPawn.Downed || targetPawn.IsPrisoner)
                     {
+                        
                         if (pawn.CanReach(targetPawn, PathEndMode.ClosestTouch, Danger.Deadly))
                         {
-                            optsList = RoomMapper.getListOfPlaces(targetPawn
-                                                                        , targetPawn.Faction == Faction.OfPlayer
-                                                                        , pawn);
+                            optsList = RoomMapper.getListOfPlaces(targetPawn, pawn);
                         }
                     }
                 }
                 if (optsList.Count() != 0)
                 {
-                    var menu = new FloatSubMenu(menuText, optsList);
+
+                    //var fff = new FloatMenuOption("test", null);
+                    //var ggg = new FloatMenuOption("test", null);
+                    //optsList.Clear();
+                    /*
+                    Created FloatMenu with no options
+                    */
+                    //optsList.Add(fff);
+                    //optsList.Add(ggg);
+                    
+                    var tmp =new List<FloatMenuOption>();
+                    foreach (var opt in optsList)
+                    {
+                        tmp.Add(opt);
+                    }
+                    var menu = new FloatSubMenu("Take "+targetPawn.Name.ToString().CapitalizeFirst()+" To", tmp);
                     opts.Add(menu);
-                    optsList.Clear();
+                    
                 }
+                else
+                {
+                    var menu = new FloatMenuOption("No Valid Place/Bed to Take " + targetPawn.Name.ToString().CapitalizeFirst(), null);
+                    opts.Add(menu);
+                }
+                optsList.Clear();
             }
         }
     }
@@ -63,38 +81,50 @@ namespace PrisonSelector
     {
         public static Dictionary<Room, RoomRoleDef> mapRooms;
 
-        public static List<FloatMenuOption> getListOfPlaces(Pawn target, bool factionOfPlayer, Pawn pawn)
+        public static List<FloatMenuOption> getListOfPlaces(Pawn target, Pawn pawn)
         {
             var subOpts = new List<FloatMenuOption>();
             var roomArr= new List<Room>();
             var jobType = new JobDef();
 
-            
+            bool ofPlayer = target.IsColonistPlayerControlled;
+
+            MapRoomInMap(Find.CurrentMap);
 
             if (target.Downed || target.IsPrisoner)
             {
-                if (factionOfPlayer)
+                if (ofPlayer)
                 {
                     roomArr = mapRooms.Keys.Where(p => p.Role == RoomRoleDefOf.Hospital).ToList();
                     jobType = JobDefOf.Rescue;
                 }
                 else
                 {
-                    roomArr = mapRooms.Keys.Where(p => p.role == RoomRoleDefOf.PrisonCell || p.Role == RoomRoleDefOf.PrisonBarracks).ToList();
+                    roomArr = mapRooms.Keys.Where(p => p.Role == RoomRoleDefOf.PrisonCell || p.Role == RoomRoleDefOf.PrisonBarracks).ToList();
                     jobType = JobDefOf.Capture;
                 }
             }
+            short Index = 1;
             foreach (var room in roomArr)
             {
                 if (room.ContainedBeds.Any(r => !r.AnyOccupants))
                 {
-                    var bed = room.ContainedBeds.Where(r => !r.AnyOccupants).RandomElement();
+                    var bed = room.ContainedBeds.Where(r => !r.AnyOccupants).First();
                     Job job = JobMaker.MakeJob(jobType, target, bed);
-                    string label = factionOfPlayer?"Rescue ":"Capture " + target.Name.ToString();
+                    job.count = 1;
+                    string label = string.Format("{0} {1}\n Take To {2} #{3}",
+                                                 ofPlayer ? "Rescue" : "Capture",
+                                                 target.Name.ToString(),
+                                                 ofPlayer ? "Hospital" : "Prison",
+                                                 Index.ToString());
+                    
+
                     subOpts.Add(new FloatMenuOption(label, delegate() {
-                        pawn.jobs.TryTakeOrderedJob(job, new JobTag?(JobTag.Misc));
+                        pawn.jobs.TryTakeOrderedJob(job, new JobTag?(JobTag.MiscWork));
                     }));
                 }
+
+                Index++;
             }
             return subOpts;
         }
