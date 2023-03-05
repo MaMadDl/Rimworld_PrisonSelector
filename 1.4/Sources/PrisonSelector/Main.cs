@@ -75,6 +75,11 @@ namespace PrisonSelector
     public class RoomMapper
     {
         public static Dictionary<Room, RoomRoleDef> mapRooms;
+        
+        private static Pawn targetPawn;
+        private static Building_Bed targetBed;
+        private static JobDef jobType;
+        
         private const string PrisUtil_Id = "kathanon.PrisonerUtil";
         private static bool CheckForActiveMod(string id)
            => LoadedModManager.RunningMods.Any(x => x.PackageId == id);
@@ -82,14 +87,8 @@ namespace PrisonSelector
 
         public static List<FloatMenuOption> getListOfPlaces(Pawn target, Pawn pawn)
         {
-            //var testMod = LoadedModManager.RunningMods.Where(x => x.PackageId == PrisUtil_Id).FirstOrDefault();
-            //foreach (var t in testMod.patches)
-            //{
-            //    Log.Error(t.ToString());
-            //}
             var subOpts = new List<FloatMenuOption>();
-            var roomArr= new List<Room>();
-            var jobType = new JobDef();
+            var roomPair= new List<Pair<Room,JobDef>>();
 
             bool ofPlayer = target.IsColonistPlayerControlled;
 
@@ -99,38 +98,58 @@ namespace PrisonSelector
             {
                 if (ofPlayer)
                 {
-                    roomArr = mapRooms.Keys.Where(p => p.Role == RoomRoleDefOf.Hospital).ToList();
-                    jobType = JobDefOf.Rescue;
+                    roomPair = mapRooms.Keys.Where(p => p.Role == RoomRoleDefOf.Hospital)
+                                            .Select(x => new Pair<Room, JobDef>(x, JobDefOf.Rescue))
+                                            .ToList();
+
                 }
                 else
                 {
-                    roomArr = mapRooms.Keys.Where(p => p.Role == RoomRoleDefOf.PrisonCell || p.Role == RoomRoleDefOf.PrisonBarracks).ToList();
-                    jobType = JobDefOf.Capture;
+                    if (target.Faction.AllyOrNeutralTo(Faction.OfPlayer))
+                    {
+                        roomPair = mapRooms.Keys.Where(p => p.Role == RoomRoleDefOf.Hospital)
+                                                .Select(x => new Pair<Room, JobDef>(x, JobDefOf.Rescue))
+                                                .ToList();
+                    }
+                    roomPair.AddRange(mapRooms.Keys.Where(p => p.Role == RoomRoleDefOf.PrisonCell || p.Role == RoomRoleDefOf.PrisonBarracks)
+                                           .Select(x => new Pair<Room, JobDef>(x, JobDefOf.Capture))
+                                           .ToList());
                 }
             }
             short Index = 1;    
-            foreach (var room in roomArr)
+            foreach(var room in roomPair)
             {
-                if (room.ContainedBeds.Any(r => !r.AnyOccupants))
+                if (room.First.ContainedBeds.Any(r => !r.AnyOccupants))
                 {
-                    var bed = room.ContainedBeds.Where(r => !r.AnyOccupants).First();
-                    Job job = JobMaker.MakeJob(jobType, target, bed);
+                    var bed = room.First.ContainedBeds.Where(r => !r.AnyOccupants).First();
+                    Job job = JobMaker.MakeJob(room.Second, target, bed);
                     job.count = 1;
                     string label = string.Format("{0} {1}\n Take To {2} #{3}",
-                                                 ofPlayer ? "Rescue" : "Capture",
+                                                 room.Second==JobDefOf.Rescue ? "Rescue" : "Capture",
                                                  target.Name.ToString(),
-                                                 ofPlayer ? "Hospital" : "Prison",
+                                                 room.Second == JobDefOf.Rescue ? "Hospital" : "Prison",
                                                  Index.ToString());
-                    
 
+                    targetBed = bed;
+                    targetPawn = target;
+                    
                     subOpts.Add(new FloatMenuOption(label, delegate() {
                         pawn.jobs.TryTakeOrderedJob(job, new JobTag?(JobTag.MiscWork));
-                    }));
+                    }
+                    //,mouseoverGuiAction: MouseAction
+                    ));
                 }
 
                 Index++;
             }
             return subOpts;
+        }
+
+        public static void MouseAction(Rect obj)
+        {
+            SimpleColor color = targetPawn.HostileTo(Faction.OfPlayer) ? SimpleColor.Red : SimpleColor.Blue;
+            GenDraw.DrawLineBetween(targetPawn.Position.ToVector3(), targetBed.Position.ToVector3(),color);
+            GenDraw.DrawFieldEdges(targetBed.GetRoom().Cells.ToList(), color.ToUnityColor());
         }
         public static Room GetValidRoomInMap(Building building, Map map)
         {

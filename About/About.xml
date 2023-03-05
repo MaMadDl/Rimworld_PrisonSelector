@@ -26,7 +26,6 @@
 	</modDependencies>
 	<loadAfter>
 		<li>brrainz.harmony</li>
-		<li>brrainz.achtung</li>
 		<li>kathanon.FloatSubMenu</li>
 	</loadAfter> 
 
