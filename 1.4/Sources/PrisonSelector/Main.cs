@@ -31,11 +31,13 @@ namespace PrisonSelector
 
             foreach(Thing thing in GenUI.ThingsUnderMouse(clickPos,1f,new TargetingParameters { 
                 canTargetPawns = true,
+                canTargetBuildings = false,
+                canTargetItems = false,
             }))
-            {    
+            {
                 var optsList= new List<FloatMenuOption>();
                 var targetPawn = thing as Pawn;
-                if (targetPawn.Spawned)
+                if (targetPawn.Spawned )
                 {   
                     if (targetPawn.Downed || targetPawn.IsPrisoner)
                     {
@@ -46,15 +48,19 @@ namespace PrisonSelector
                         }
                     }
                 }
+
                 if (optsList.Count() != 0)
                 {
+                    
                     var tmp =new List<FloatMenuOption>();
+                    
                     foreach (var opt in optsList)
                     {
                         tmp.Add(opt);
                     }
                     var menu = new FloatSubMenu("Take "+targetPawn.Name.ToString().CapitalizeFirst()+" To", tmp);
                     opts.Add(menu);
+                    
                     
                 }
                 else
@@ -69,9 +75,18 @@ namespace PrisonSelector
     public class RoomMapper
     {
         public static Dictionary<Room, RoomRoleDef> mapRooms;
+        private const string PrisUtil_Id = "kathanon.PrisonerUtil";
+        private static bool CheckForActiveMod(string id)
+           => LoadedModManager.RunningMods.Any(x => x.PackageId == id);
+        private static readonly bool PrisUtil = CheckForActiveMod(PrisUtil_Id);
 
         public static List<FloatMenuOption> getListOfPlaces(Pawn target, Pawn pawn)
         {
+            //var testMod = LoadedModManager.RunningMods.Where(x => x.PackageId == PrisUtil_Id).FirstOrDefault();
+            //foreach (var t in testMod.patches)
+            //{
+            //    Log.Error(t.ToString());
+            //}
             var subOpts = new List<FloatMenuOption>();
             var roomArr= new List<Room>();
             var jobType = new JobDef();
@@ -93,7 +108,7 @@ namespace PrisonSelector
                     jobType = JobDefOf.Capture;
                 }
             }
-            short Index = 1;
+            short Index = 1;    
             foreach (var room in roomArr)
             {
                 if (room.ContainedBeds.Any(r => !r.AnyOccupants))

@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>PrisonSelector</name>
-	<packageId>mag.prisonselector</packageId>
+	<name>Prison Selector</name>
+	<packageId>MAG.PrisonSelector</packageId>
 	<author>Noisy</author>
 	<supportedVersions>
 		<li>1.4</li>
 	</supportedVersions>
 	<loadBefore></loadBefore>
 	<incompatibleWith></incompatibleWith>
-	<description>Prison And Hospital Selector so you can take Prisoners and Downed pawns to Specific Prison/Hospital		
+	<description>Simple Menu Addon So You Can Select The Prison or Hospital when Capturing/Rescuing Pawns 
 	</description>
 	<url>https://github.com/MaMadDl/Rimworld_PrisonSelector</url>
 	<modDependencies>
