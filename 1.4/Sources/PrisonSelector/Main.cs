@@ -28,7 +28,6 @@ namespace PrisonSelector
 	{
         public static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts, bool drafted)
         {
-
             foreach(Thing thing in GenUI.ThingsUnderMouse(clickPos,1f,new TargetingParameters { 
                 canTargetPawns = true,
                 canTargetBuildings = false,
@@ -58,10 +57,16 @@ namespace PrisonSelector
                     {
                         tmp.Add(opt);
                     }
-                    var menu = new FloatSubMenu("Take "+targetPawn.Name.ToString().CapitalizeFirst()+" To", tmp);
-                    opts.Add(menu);
-                    
-                    
+                    if (RoomMapper.CheckForActiveMod("brrainz.achtung"))
+                    {
+                        var menuAchtung = FloatSubMenu.CompatMMMCreate("Take " + targetPawn.Name.ToString().CapitalizeFirst() + " To", tmp);
+                        opts.Add(menuAchtung);
+                    }
+                    else
+                    {
+                        var menu = new FloatSubMenu("Take " + targetPawn.Name.ToString().CapitalizeFirst() + " To", tmp);
+                        opts.Add(menu);
+                    }
                 }
                 else
                 {
@@ -81,9 +86,10 @@ namespace PrisonSelector
         private static JobDef jobType;
         
         private const string PrisUtil_Id = "kathanon.PrisonerUtil";
-        private static bool CheckForActiveMod(string id)
+        private const string Achtung_ID = "brrainz.achtung";
+
+        public static bool CheckForActiveMod(string id)
            => LoadedModManager.RunningMods.Any(x => x.PackageId == id);
-        private static readonly bool PrisUtil = CheckForActiveMod(PrisUtil_Id);
 
         public static List<FloatMenuOption> getListOfPlaces(Pawn target, Pawn pawn)
         {
@@ -101,7 +107,6 @@ namespace PrisonSelector
                     roomPair = mapRooms.Keys.Where(p => p.Role == RoomRoleDefOf.Hospital)
                                             .Select(x => new Pair<Room, JobDef>(x, JobDefOf.Rescue))
                                             .ToList();
-
                 }
                 else
                 {
@@ -115,41 +120,55 @@ namespace PrisonSelector
                                            .Select(x => new Pair<Room, JobDef>(x, JobDefOf.Capture))
                                            .ToList());
                 }
-            }
-            short Index = 1;    
-            foreach(var room in roomPair)
-            {
-                if (room.First.ContainedBeds.Any(r => !r.AnyOccupants))
+
+                short Index = 1;
+                foreach (var room in roomPair)
                 {
-                    var bed = room.First.ContainedBeds.Where(r => !r.AnyOccupants).First();
-                    Job job = JobMaker.MakeJob(room.Second, target, bed);
-                    job.count = 1;
-                    string label = string.Format("{0} {1}\n Take To {2} #{3}",
-                                                 room.Second==JobDefOf.Rescue ? "Rescue" : "Capture",
-                                                 target.Name.ToString(),
-                                                 room.Second == JobDefOf.Rescue ? "Hospital" : "Prison",
-                                                 Index.ToString());
+                    if (room.First.ContainedBeds.Any(r => r.def.building.bed_humanlike && !r.AnyOccupants
+                                                         && !r.MapHeld.reservationManager.IsReservedByAnyoneOf(r, Faction.OfPlayer)))
+                    {
 
-                    targetBed = bed;
-                    targetPawn = target;
-                    
-                    subOpts.Add(new FloatMenuOption(label, delegate() {
-                        pawn.jobs.TryTakeOrderedJob(job, new JobTag?(JobTag.MiscWork));
+                        var bed = room.First.ContainedBeds.First(r => r.def.building.bed_humanlike
+                                                                      && !r.AnyOccupants
+                                                                      && !r.MapHeld.reservationManager.IsReservedByAnyoneOf(r, Faction.OfPlayer));
+                        
+
+                            Job job = JobMaker.MakeJob(room.Second, target, bed);
+                            job.count = 1;
+                            string label = string.Format("{0} {1}\n Take To {2} #{3}",
+                                                         room.Second == JobDefOf.Rescue ? "Rescue" : "Capture",
+                                                         target.Name.ToString(),
+                                                         room.Second == JobDefOf.Rescue ? "Hospital" : "Prison",
+                                                         Index.ToString());
+
+
+                            subOpts.Add(FloatMenuUtility.DecoratePrioritizedTask(
+                            new FloatMenuOption(label, delegate ()
+                            {
+
+                                pawn.jobs.TryTakeOrderedJob(job, new JobTag?(JobTag.MiscWork)); 
+                            
+                            }, MenuOptionPriority.RescueOrCapture
+                               // , mouseoverGuiAction: MouseAction
+                                )
+                            , pawn
+                            , target));
+
                     }
-                    //,mouseoverGuiAction: MouseAction
-                    ));
-                }
 
-                Index++;
+                    Index++;
+                }
             }
             return subOpts;
         }
 
         public static void MouseAction(Rect obj)
         {
+
             SimpleColor color = targetPawn.HostileTo(Faction.OfPlayer) ? SimpleColor.Red : SimpleColor.Blue;
-            GenDraw.DrawLineBetween(targetPawn.Position.ToVector3(), targetBed.Position.ToVector3(),color);
+            GenDraw.DrawLineBetween(targetPawn.Position.ToVector3(), targetBed.Position.ToVector3(), color);
             GenDraw.DrawFieldEdges(targetBed.GetRoom().Cells.ToList(), color.ToUnityColor());
+
         }
         public static Room GetValidRoomInMap(Building building, Map map)
         {
@@ -185,6 +204,20 @@ namespace PrisonSelector
                 mapRooms[room] = room.Role;
             }
         }
+    
+        //public static MethodInfo PrisUtilHelper()
+        //{
+        //    var prisUtilapp = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.FullName.Contains("PrisonerUtil")).First();
+        //    if (prisUtilapp != null) {
+        //        var assem = prisUtilapp.CreateInstance("InitialInteractionMode_Patches");
+        //        var method = assem.GetType().GetMethod("AddHumanlikeOrders_Post");
+        //        return method;
+                    
+        //    }
+        //    return null;
+            
+        //}
     }
+
 
 }
