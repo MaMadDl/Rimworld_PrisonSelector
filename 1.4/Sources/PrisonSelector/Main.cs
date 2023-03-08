@@ -80,11 +80,7 @@ namespace PrisonSelector
     public class RoomMapper
     {
         public static Dictionary<Room, RoomRoleDef> mapRooms;
-        
-        private static Pawn targetPawn;
-        private static Building_Bed targetBed;
-        private static JobDef jobType;
-        
+
         private const string PrisUtil_Id = "kathanon.PrisonerUtil";
         private const string Achtung_ID = "brrainz.achtung";
 
@@ -141,16 +137,18 @@ namespace PrisonSelector
                                                          room.Second == JobDefOf.Rescue ? "Hospital" : "Prison",
                                                          Index.ToString());
 
-
                             subOpts.Add(FloatMenuUtility.DecoratePrioritizedTask(
-                            new FloatMenuOption(label, delegate ()
+                            new FloatMenuOption(label, () =>
                             {
-
                                 pawn.jobs.TryTakeOrderedJob(job, new JobTag?(JobTag.MiscWork)); 
-                            
-                            }, MenuOptionPriority.RescueOrCapture
-                               // , mouseoverGuiAction: MouseAction
-                                )
+                            }
+                            , MenuOptionPriority.RescueOrCapture
+                               , (Rect obj) => {
+                                    
+                                   SimpleColor color = room.Second == JobDefOf.Capture ? SimpleColor.Red : SimpleColor.Blue;
+                                   GenDraw.DrawLineBetween(target.Position.ToVector3(), bed.Position.ToVector3(), color);
+                                   GenDraw.DrawFieldEdges(bed.GetRoom().Cells.ToList(), color.ToUnityColor());
+                               })
                             , pawn
                             , target));
 
@@ -162,14 +160,6 @@ namespace PrisonSelector
             return subOpts;
         }
 
-        public static void MouseAction(Rect obj)
-        {
-
-            SimpleColor color = targetPawn.HostileTo(Faction.OfPlayer) ? SimpleColor.Red : SimpleColor.Blue;
-            GenDraw.DrawLineBetween(targetPawn.Position.ToVector3(), targetBed.Position.ToVector3(), color);
-            GenDraw.DrawFieldEdges(targetBed.GetRoom().Cells.ToList(), color.ToUnityColor());
-
-        }
         public static Room GetValidRoomInMap(Building building, Map map)
         {
             if (building.Faction != Faction.OfPlayer)
