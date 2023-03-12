@@ -32,7 +32,8 @@ namespace PrisonSelector
             {
                 //FIX place these in a better place
                 var overrideMenu = AccessTools.Method(RoomMapper.Assem.GetType("PrisonerUtil.InitialInteractionMode_Patches"), "OverrideMenuAddition");
-                overrideMenu.Invoke(null, new object[] { true });
+                if(overrideMenu != null) 
+                    overrideMenu.Invoke(null, new object[] { true });
             }
             foreach (Thing thing in GenUI.ThingsUnderMouse(clickPos,1f,new TargetingParameters { 
                 canTargetPawns = true,
@@ -43,10 +44,10 @@ namespace PrisonSelector
                 
             }))
             {
-                var optsList = new List<FloatMenuOption>();
 
                 if (thing.Spawned )
                 {
+                    var optsList = new List<FloatMenuOption>();
                     var targetPawn = thing as Pawn;
 
                     if (targetPawn.Downed || targetPawn.IsPrisoner)
@@ -58,37 +59,59 @@ namespace PrisonSelector
                         }
                 
                
-                    if (optsList.Count() != 0)
-                    {
+                        if (optsList.Count() != 0)
+                        {
 
-                        var tmp = new List<FloatMenuOption>();
+                            var tmp = new List<FloatMenuOption>();
+                            foreach (var opt in optsList)
+                            {
+                                //dunno why this is needed but w.e
+                                tmp.Add(opt);
+                            }
 
-                        foreach (var opt in optsList)
-                        {
-                            //dunno why this is needed but w.e
-                            tmp.Add(opt);
+                            if (RoomMapper.CheckForActiveMod("brrainz.achtung"))
+                            {
+                                var menuAchtung = FloatSubMenu.CompatMMMCreate("Take " + targetPawn.Name.ToString().CapitalizeFirst() + " To", tmp);
+                                opts.Add(menuAchtung);
+                            }
+                            else
+                            {
+                                var menu = new FloatSubMenu("Take " + targetPawn.Name.ToString().CapitalizeFirst() + " To", tmp);
+                                opts.Add(menu);
+                            }
                         }
-                        if (RoomMapper.CheckForActiveMod("brrainz.achtung"))
-                        {
-                            var menuAchtung = FloatSubMenu.CompatMMMCreate("Take " + targetPawn.Name.ToString().CapitalizeFirst() + " To", tmp);
-                            opts.Add(menuAchtung);
-                        }
-                        else
-                        {
-                            var menu = new FloatSubMenu("Take " + targetPawn.Name.ToString().CapitalizeFirst() + " To", tmp);
-                            opts.Add(menu);
-                        }
-                    }
-                    optsList.Clear();
+
                     }
                 }
             }
             
         }
     }
+
+    [HarmonyPatch(typeof(MapDrawer))]
+    [HarmonyPatch(nameof(MapDrawer.DrawMapMesh))]
+    public static class PrisonSelector_MapDrawerDrawMapMesh_Patch
+    {
+        public static void Postfix()
+        {
+            if (RoomMapper.doDraw)
+            {
+                var currBed = RoomMapper.bedHolder;
+                SimpleColor color = currBed.ForPrisoners ? SimpleColor.Red : SimpleColor.Blue;
+                GenDraw.DrawLineBetween(RoomMapper.holderPawn.TrueCenter(), currBed.Position.ToVector3(), color);
+                GenDraw.DrawFieldEdges(currBed.GetRoom().Cells.ToList(), currBed.ForPrisoners? Color.red:Color.blue);
+                RoomMapper.doDraw = false;
+            }
+        }
+    }
     public class RoomMapper
     {
         public static Dictionary<Room, RoomRoleDef> mapRooms;
+        
+        public static Building_Bed bedHolder;
+        public static bool doDraw = false;
+        public static Pawn holderPawn;
+
 
         public static bool CheckForActiveMod(string id)
            => LoadedModManager.RunningMods.Any(x => x.PackageId == id);
@@ -167,9 +190,9 @@ namespace PrisonSelector
                             , MenuOptionPriority.RescueOrCapture
                                 , (Rect obj) =>
                                 {
-                                    SimpleColor color = room.Second == JobDefOf.Rescue ? SimpleColor.Blue : SimpleColor.Red;
-                                    GenDraw.DrawLineBetween(target.Position.ToVector3(), bed.Position.ToVector3(), color);
-                                    GenDraw.DrawFieldEdges(bed.GetRoom().Cells.ToList(), color.ToUnityColor());
+                                    bedHolder = bed;
+                                    doDraw = true;
+                                    holderPawn = target;
                                 })
                             , pawn
                             , target);
@@ -194,6 +217,8 @@ namespace PrisonSelector
             }
             return subOpts;
         }
+
+        
 
         public static Room GetValidRoomInMap(Building building, Map map)
         {
