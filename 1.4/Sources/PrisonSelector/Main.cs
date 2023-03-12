@@ -202,7 +202,7 @@ namespace PrisonSelector
                         {
                             
                             var method = AccessTools.Method(Assem.GetType("PrisonerUtil.InitialInteractionMode_Patches"), "InteractionSubMenu");
-                            object[] args = { outOpts.Label.ToString(), outOpts.action };
+                            object[] args = { outOpts.Label.ToString(), outOpts.action, outOpts.mouseoverGuiAction , target};
                             object interOpts = method.Invoke(Assem.GetType("PrisonerUtil.InitialInteractionMode_Patches"), args);                           
                             subOpts.Add((FloatMenuOption)interOpts);
                         }
