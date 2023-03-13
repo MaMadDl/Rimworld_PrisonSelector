@@ -69,16 +69,9 @@ namespace PrisonSelector
                                 tmp.Add(opt);
                             }
 
-                            if (RoomMapper.CheckForActiveMod("brrainz.achtung"))
-                            {
-                                var menuAchtung = FloatSubMenu.CompatMMMCreate("Take " + targetPawn.Name.ToString().CapitalizeFirst() + " To", tmp);
-                                opts.Add(menuAchtung);
-                            }
-                            else
-                            {
-                                var menu = new FloatSubMenu("Take " + targetPawn.Name.ToString().CapitalizeFirst() + " To", tmp);
-                                opts.Add(menu);
-                            }
+                            var menuAchtung = FloatSubMenu.CompatMMMCreate("Take " + targetPawn.NameFullColored.CapitalizeFirst() + " To", tmp);
+                            opts.Add(menuAchtung);                          
+                      
                         }
 
                     }
@@ -145,8 +138,6 @@ namespace PrisonSelector
                                                     .Select(x => new Pair<Room, JobDef>(x, JobDefOf.Rescue))
                                                     .ToList();
                         }
-                        
-
                         roomPair.AddRange(mapRooms.Keys.Where(p => p.Role == RoomRoleDefOf.PrisonCell || p.Role == RoomRoleDefOf.PrisonBarracks )
                                                .Select(x => new Pair<Room, JobDef>(x, target.IsPrisoner? JobDefOf.Capture : JobDefOf.EscortPrisonerToBed))
                                                .ToList());
@@ -167,18 +158,19 @@ namespace PrisonSelector
                         Index = 1;
                     }
 
-                    var bed = room.First.ContainedBeds.Where(r =>  target.RaceProps.Animal?!r.def.building.bed_humanlike:r.def.building.bed_humanlike
-                                                                    && !r.AnyOccupants
-                                                                    && !r.MapHeld.reservationManager.IsReservedByAnyoneOf(r, Faction.OfPlayer)
-                                                                    && r != target.CurrentBed()).FirstOrFallback();
+                    var bed = room.First.ContainedBeds.Where(r =>  (target.RaceProps.Animal?!r.def.building.bed_humanlike:r.def.building.bed_humanlike)
+                                                                             && !r.AnyOccupants
+                                                                             && !r.MapHeld.reservationManager.IsReservedByAnyoneOf(r, Faction.OfPlayer)
+                                                                             && r!= target.CurrentBed()).FirstOrFallback();
+
                     if (bed != null)
                     {
                         Job job = JobMaker.MakeJob(room.Second, target, bed);
                         job.count = 1;
-                        
+
                         string label = string.Format("{0} {1}\n Take To {2} #{3}",
                                                         room.Second == JobDefOf.Rescue ? "Rescue" : "Capture",
-                                                        target.Name.ToString(),
+                                                        target.NameFullColored.CapitalizeFirst(),
                                                         room.First.GetRoomRoleLabel(),
                                                         Index.ToString());
 
@@ -197,10 +189,8 @@ namespace PrisonSelector
                             , pawn
                             , target);
 
-
                         if (prisUtilActive && room.Second != JobDefOf.Rescue)
                         {
-                            
                             var method = AccessTools.Method(Assem.GetType("PrisonerUtil.InitialInteractionMode_Patches"), "InteractionSubMenu");
                             object[] args = { outOpts.Label.ToString(), outOpts.action, outOpts.mouseoverGuiAction , target};
                             object interOpts = method.Invoke(Assem.GetType("PrisonerUtil.InitialInteractionMode_Patches"), args);                           
